@@ -2,19 +2,25 @@
 
 const APPLICATION_WIDTH = 640;
 const APPLICATION_HEIGHT = 360;
+const RED = 0xff0000;
+const MAX_SPEED = 50;
 let boids = [];
 
 class Boid {
     constructor(appStage, position) {
-        // Create a Graphics object, set a fill color, draw a rectangle
+        // Draw triangle pointing to angle 0 (to the right).
         this.graphics = new PIXI.Graphics();
-        this.graphics.beginFill(0xff0000);
-        this.graphics.drawRect(0, 0, 200, 100);
+        this.graphics.beginFill(RED);
+        this.graphics.moveTo(0,0);
+        this.graphics.lineTo(-15, 5);
+        this.graphics.lineTo(-15, -5);
+        this.graphics.endFill();
+
         appStage.addChild(this.graphics);
 
         // Direction and speed are randomly initialized.
-        this.direction = getRandom2DVector();
-        this.speed = Math.random();
+        this.direction = getRandomNormalized2DVector();
+        this.speed = MAX_SPEED * Math.random();
 
         // Add to global boids vector.
         boids.push(this);
@@ -25,16 +31,27 @@ class Boid {
         this.graphics.x += this.direction.x * this.speed;
         this.graphics.y += this.direction.y * this.speed;
 
+        this.graphics.rotation = getVectorAngle(this.direction);
+
         // TODO: Change direction.
     }
 };
 
-function getRandom2DVector() {
-    return {x: Math.random(), y: Math.random()};
+function getRandomNormalized2DVector() {
+    let vector = {x: Math.random() * APPLICATION_WIDTH, y: Math.random() * APPLICATION_HEIGHT};
+    let vectorLength = Math.sqrt(vector.x * vector.x) + (vector.y * vector.y);
+    vector.x /= vectorLength;
+    vector.y /= vectorLength;
+    return vector;
 }
 
-function getRandom2DVectorInScreen() {
+function getRandomPointInScreen() {
     return {x: Math.random() * APPLICATION_WIDTH, y: Math.random() * APPLICATION_HEIGHT};
+}
+
+// Gets the vector angle in radians.
+function getVectorAngle(vector) {
+    return Math.atan2(vector.y, vector.x);
 }
 
 // Create the application helper and add its render target to the page
@@ -42,7 +59,7 @@ let app = new PIXI.Application({ width: APPLICATION_WIDTH, height: APPLICATION_H
 document.body.appendChild(app.view);
 
 // Add it to the stage to render
-let position = getRandom2DVectorInScreen();
+let position = getRandomPointInScreen();
 new Boid(app.stage, position);
 
 // Add a ticker callback to move the sprite back and forth
