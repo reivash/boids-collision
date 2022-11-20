@@ -32,8 +32,6 @@ class Boid {
         this.graphics.y += this.direction.y * this.speed;
 
         this.graphics.rotation = getVectorAngle(this.direction);
-
-        // TODO: Change direction.
     }
 };
 
