@@ -3,7 +3,7 @@
 const APPLICATION_WIDTH = 640;
 const APPLICATION_HEIGHT = 360;
 const RED = 0xff0000;
-const MAX_SPEED = 50;
+const MAX_SPEED = 10;
 let boids = [];
 
 class Boid {
@@ -15,11 +15,18 @@ class Boid {
         this.graphics.lineTo(-15, 5);
         this.graphics.lineTo(-15, -5);
         this.graphics.endFill();
-
         appStage.addChild(this.graphics);
+
+        // Set position.
+        this.graphics.x = position.x;
+        this.graphics.y = position.y;
+
 
         // Direction and speed are randomly initialized.
         this.direction = getRandomNormalized2DVector();
+        if (Math.random() > 0.5) this.direction.x *= -1;
+        if (Math.random() > 0.5) this.direction.y *= -1;
+
         this.speed = MAX_SPEED * Math.random();
 
         // Add to global boids vector.
@@ -58,10 +65,7 @@ document.body.appendChild(app.view);
 
 // Add it to the stage to render
 let position = getRandomPointInScreen();
-
-for (let step = 0; step < 100; step++) {
-    new Boid(app.stage, position);
-}
+new Boid(app.stage, position);
 
 // Add a ticker callback to move the sprite back and forth
 let elapsed = 0.0;
