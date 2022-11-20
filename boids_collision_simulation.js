@@ -11,7 +11,7 @@ class Boid {
         // Draw triangle pointing to angle 0 (to the right).
         this.graphics = new PIXI.Graphics();
         this.graphics.beginFill(RED);
-        this.graphics.moveTo(0,0);
+        this.graphics.moveTo(0, 0);
         this.graphics.lineTo(-15, 5);
         this.graphics.lineTo(-15, -5);
         this.graphics.endFill();
@@ -36,7 +36,7 @@ class Boid {
 };
 
 function getRandomNormalized2DVector() {
-    let vector = {x: Math.random() * APPLICATION_WIDTH, y: Math.random() * APPLICATION_HEIGHT};
+    let vector = { x: Math.random(), y: Math.random()};
     let vectorLength = Math.sqrt(vector.x * vector.x) + (vector.y * vector.y);
     vector.x /= vectorLength;
     vector.y /= vectorLength;
@@ -44,7 +44,7 @@ function getRandomNormalized2DVector() {
 }
 
 function getRandomPointInScreen() {
-    return {x: Math.random() * APPLICATION_WIDTH, y: Math.random() * APPLICATION_HEIGHT};
+    return { x: Math.random() * APPLICATION_WIDTH, y: Math.random() * APPLICATION_HEIGHT };
 }
 
 // Gets the vector angle in radians.
@@ -58,7 +58,10 @@ document.body.appendChild(app.view);
 
 // Add it to the stage to render
 let position = getRandomPointInScreen();
-new Boid(app.stage, position);
+
+for (let step = 0; step < 100; step++) {
+    new Boid(app.stage, position);
+}
 
 // Add a ticker callback to move the sprite back and forth
 let elapsed = 0.0;
