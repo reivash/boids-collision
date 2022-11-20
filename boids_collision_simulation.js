@@ -1,19 +1,17 @@
-// This file expects a 'canvas' HTML element with id 'glcanvas'.
+// Create the application helper and add its render target to the page
+let app = new PIXI.Application({ width: 640, height: 360 });
+document.body.appendChild(app.view);
 
-function main() {
-    const canvas = document.querySelector('#glcanvas');
-    const gl = canvas.getContext('webgl'); // Initialize the GL context.
+// Create a Graphics object, set a fill color, draw a rectangle
+let obj = new PIXI.Graphics();
+obj.beginFill(0xff0000);
+obj.drawRect(0, 0, 200, 100);
 
-    // If we don't have a GL context, give up now.
-    if (!gl) {
-        alert('Unable to initialize WebGL. Your browser or machine may not support it.');
-        return;
-    }
+// Add it to the stage to render
+app.stage.addChild(obj);
 
-    // Set clear color to white, fully opaque.
-    gl.clearColor(1.0, 1.0, 1.0, 1.0);
-    // Clear the color buffer with specified clear color.
-    gl.clear(gl.COLOR_BUFFER_BIT);
-}
-
-window.onload = main;
+// Add a ticker callback to move the sprite back and forth
+let elapsed = 0.0;
+app.ticker.add((delta) => {
+    elapsed += delta;
+});
