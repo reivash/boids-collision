@@ -7,13 +7,15 @@ const MAX_SPEED = 10;
 let boids = [];
 
 class Boid {
+    avoidBorderMinimumDistance = 15;
+
     constructor(appStage, position) {
         // Draw triangle pointing to angle 0 (to the right).
         this.graphics = new PIXI.Graphics();
         this.graphics.beginFill(RED);
-        this.graphics.moveTo(0, 0);
-        this.graphics.lineTo(-15, 5);
-        this.graphics.lineTo(-15, -5);
+        this.graphics.moveTo(5, 0);
+        this.graphics.lineTo(-10, 5);
+        this.graphics.lineTo(-10, -5);
         this.graphics.endFill();
         appStage.addChild(this.graphics);
 
@@ -33,12 +35,38 @@ class Boid {
         boids.push(this);
     }
 
+    avoidBorders() {
+        let escapeDirection = {x: 0, y: 0};
+
+        // Avoid top collision.
+        if (this.graphics.y < this.avoidBorderMinimumDistance) {
+            this.direction = {x: 0, y: 1};
+        }
+
+        // Avoid bottom collision.
+        if (this.graphics.y > (APPLICATION_HEIGHT - this.avoidBorderMinimumDistance)) {
+            this.direction = {x: 0, y: -1};
+        }
+
+        // Avoid left collision.
+        if (this.graphics.x < this.avoidBorderMinimumDistance) {
+            this.direction = {x: 1, y: x};
+        }
+        
+        // Avoid right collision.
+        if (this.graphics.y > (APPLICATION_WIDTH - this.avoidBorderMinimumDistance)) {
+            this.direction = {x: -1, y:1};
+        }
+    }
+
     tick() {
         // Move towards `direction` at `speed` velocity.
         this.graphics.x += this.direction.x * this.speed;
         this.graphics.y += this.direction.y * this.speed;
 
         this.graphics.rotation = getVectorAngle(this.direction);
+
+        this.avoidBorders();
     }
 };
 
