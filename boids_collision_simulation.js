@@ -6,8 +6,10 @@ const RED = 0xff0000;
 const MAX_SPEED = 10;
 let boids = [];
 
+// TODO: Add random pio pio sounds that make the icon flash bigger.
 class Boid {
     avoidBorderMinimumDistance = 15;
+    maxTickTurnRadians = 0.1;
 
     constructor(appStage, position) {
         // Draw triangle pointing to angle 0 (to the right).
@@ -36,11 +38,11 @@ class Boid {
     }
 
     avoidBorders() {
-        let escapeDirection = {x: 0, y: 0};
-
         // Avoid top collision.
         if (this.graphics.y < this.avoidBorderMinimumDistance) {
-            this.direction = {x: 0, y: 1};
+            let requestedTurnRadians = getRotationDelta(this.direction, {x: 0, y: 1});
+            let possibleTurnRadians = this.getPossibleTurnRadians(requestedTurnRadians);
+            this.direction = turnVector(this.direction, possibleTurnRadians);
         }
 
         // Avoid bottom collision.
@@ -57,6 +59,11 @@ class Boid {
         if (this.graphics.y > (APPLICATION_WIDTH - this.avoidBorderMinimumDistance)) {
             this.direction = {x: -1, y:1};
         }
+    }
+
+    getPossibleTurnRadians(requestedRadians) {
+        // TODO: Add turn acceleration.
+        return this.maxTickTurnRadians > requestedRadians ? requestedRadians : this.maxTickTurnRadians;
     }
 
     tick() {
