@@ -2,6 +2,7 @@
 // Both vectors must be normalized.
 
 const TWO_PI = Math.PI * 2;
+const VECTOR_PRECISION = 0.0000001;
 
 function getVectorAngle(vector) {
     let angle = Math.atan2(vector.y, vector.x);
@@ -26,9 +27,21 @@ function getRotationDelta(v1, v2) {
     return delta;
 }
 
+function smallValuesVectorToZero(vector) {
+    if (Math.abs(vector.x) < VECTOR_PRECISION) {
+        vector.x = 0;
+    }
+    if (Math.abs(vector.y) < VECTOR_PRECISION) {
+        vector.y = 0;
+    }
+    return vector;
+}
+
 function turnVector(vector, radians) {
-    return {x: vector.x * Math.cos(radians) - vector.y * Math.sin(radians), 
-            y: vector.x * Math.sin(radians) + vector.y * Math.cos(radians)}
+    let turnedVector = {x: vector.x * Math.cos(radians) - vector.y * Math.sin(radians), 
+                  y: vector.x * Math.sin(radians) + vector.y * Math.cos(radians)};
+
+    return smallValuesVectorToZero(turnedVector);
 }
 
 

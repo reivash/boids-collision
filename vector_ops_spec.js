@@ -64,4 +64,28 @@ describe('turnVector', function() {
     radians = turnVector(v, angle);    
     expect(turnVector(v, angle)).toEqual({x: 0, y: 1});
   });
+  
+  it('(0, 1) + (Math.PI / 2) = (-1, 0)', function() {
+    v = {x: 0, y: 1};
+    angle = Math.PI / 2;
+
+    radians = turnVector(v, angle);    
+    expect(turnVector(v, angle)).toEqual({x: -1, y: 0});
+  });
+
+  it('(-1, 0) + (Math.PI / 2) = (0, -1)', function() {
+    v = {x: -1, y: 0};
+    angle = Math.PI / 2;
+
+    radians = turnVector(v, angle);    
+    expect(turnVector(v, angle)).toEqual({x: 0, y: -1});
+  });
+
+  it('(0, -1) + (Math.PI / 2) = (1, 0)', function() {
+    v = {x: 0, y: -1};
+    angle = Math.PI / 2;
+
+    radians = turnVector(v, angle);    
+    expect(turnVector(v, angle)).toEqual({x: 1, y: 0});
+  });
 });
