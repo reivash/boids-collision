@@ -98,7 +98,7 @@ class Boid {
 
 function getRandomNormalized2DVector() {
     let vector = { x: Math.random(), y: Math.random() };
-    let vectorLength = Math.sqrt(vector.x * vector.x) + (vector.y * vector.y);
+    let vectorLength = Math.sqrt(vector.x * vector.x) + Math.sqrt(vector.y * vector.y);
     vector.x /= vectorLength;
     vector.y /= vectorLength;
     return vector;
