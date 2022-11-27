@@ -45,28 +45,21 @@ class Boid {
             let requestedTurnRadians = getRotationDelta(this.direction, { x: 0, y: 1 });
             let possibleTurnRadians = this.getPossibleTurnRadians(requestedTurnRadians);
             this.direction = turnVector(this.direction, possibleTurnRadians);
-            console.log("Avoid top");
-        } else
-        // Avoid bottom collision.
-        if (this.graphics.y > (APPLICATION_HEIGHT - this.avoidBorderMinimumDistance)) {
+        } else if (this.graphics.y > (APPLICATION_HEIGHT - this.avoidBorderMinimumDistance)) {
+            // Avoid bottom collision.
             let requestedTurnRadians = getRotationDelta(this.direction, { x: 0, y: -1 });
             let possibleTurnRadians = this.getPossibleTurnRadians(requestedTurnRadians);
             this.direction = turnVector(this.direction, possibleTurnRadians);
-            console.log("Avoid bottom");
-        } else
-        // Avoid left collision.
-        if (this.graphics.x < this.avoidBorderMinimumDistance) {
+        } else if (this.graphics.x < this.avoidBorderMinimumDistance) {
+            // Avoid left collision.
             let requestedTurnRadians = getRotationDelta(this.direction, { x: 1, y: 0 });
             let possibleTurnRadians = this.getPossibleTurnRadians(requestedTurnRadians);
             this.direction = turnVector(this.direction, possibleTurnRadians);
-            console.log("Avoid left");
-        } else
-        // Avoid right collision.
-        if (this.graphics.x > (APPLICATION_WIDTH - this.avoidBorderMinimumDistance)) {
+        } else if (this.graphics.x > (APPLICATION_WIDTH - this.avoidBorderMinimumDistance)) {
+            // Avoid right collision.
             let requestedTurnRadians = getRotationDelta(this.direction, { x: -1, y: 0 });
             let possibleTurnRadians = this.getPossibleTurnRadians(requestedTurnRadians);
             this.direction = turnVector(this.direction, possibleTurnRadians);
-            console.log("Avoid right");
         } else {
             this.turnDelta = 0;
         }
@@ -83,8 +76,11 @@ class Boid {
         if (this.turnDelta < -this.maxTurnSpeed) this.turnDelta = -this.maxTurnSpeed;
         if (this.turnDelta > this.maxTurnSpeed) this.turnDelta = this.maxTurnSpeed;
         // If we turn more than we want, turn only what we want.
-        if (this.turnDelta < -requestedRadians) this.turnDelta = -requestedRadians;
-        if (this.turnDelta > requestedRadians) this.turnDelta = requestedRadians;
+        if (requestedRadians < 0) {
+            if (this.turnDelta < requestedRadians) { this.turnDelta = -requestedRadians; }
+        } else {
+            if (this.turnDelta > requestedRadians) { this.turnDelta = requestedRadians; }
+        }
 
         return this.turnDelta;
     }
