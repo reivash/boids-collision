@@ -40,29 +40,20 @@ class Boid {
     }
 
     avoidBorders() {
-        // Avoid top collision.
         if (this.graphics.y < this.avoidBorderMinimumDistance) {
-            let requestedTurnRadians = getRotationDelta(this.direction, { x: 0, y: 1 });
-            let possibleTurnRadians = this.getPossibleTurnRadians(requestedTurnRadians);
-            this.direction = turnVector(this.direction, possibleTurnRadians);
+            // Avoid top collision.
+            return getRotationDelta(this.direction, { x: 0, y: 1 });
         } else if (this.graphics.y > (APPLICATION_HEIGHT - this.avoidBorderMinimumDistance)) {
             // Avoid bottom collision.
-            let requestedTurnRadians = getRotationDelta(this.direction, { x: 0, y: -1 });
-            let possibleTurnRadians = this.getPossibleTurnRadians(requestedTurnRadians);
-            this.direction = turnVector(this.direction, possibleTurnRadians);
+            return getRotationDelta(this.direction, { x: 0, y: -1 });
         } else if (this.graphics.x < this.avoidBorderMinimumDistance) {
             // Avoid left collision.
-            let requestedTurnRadians = getRotationDelta(this.direction, { x: 1, y: 0 });
-            let possibleTurnRadians = this.getPossibleTurnRadians(requestedTurnRadians);
-            this.direction = turnVector(this.direction, possibleTurnRadians);
+            return getRotationDelta(this.direction, { x: 1, y: 0 });
         } else if (this.graphics.x > (APPLICATION_WIDTH - this.avoidBorderMinimumDistance)) {
             // Avoid right collision.
-            let requestedTurnRadians = getRotationDelta(this.direction, { x: -1, y: 0 });
-            let possibleTurnRadians = this.getPossibleTurnRadians(requestedTurnRadians);
-            this.direction = turnVector(this.direction, possibleTurnRadians);
-        } else {
-            this.turnDelta = 0;
+            return getRotationDelta(this.direction, { x: -1, y: 0 });
         }
+        return 0;
     }
 
     getPossibleTurnRadians(requestedRadians) {
@@ -85,6 +76,30 @@ class Boid {
         return this.turnDelta;
     }
 
+    getNeighbours() {
+        let neighbours = [];
+        // return neighbours;
+        return boids;
+    }
+
+    alignWithNeighboursTurnAngle() {
+        let neighbours = this.getNeighbours();
+        let avg_angle = 0;
+        for (let i = 0; i < neighbours.length; i++) {
+            let n = neighbours[i];
+            if (n == this) continue;
+
+            avg_angle += getVectorAngle(n.getDirection());
+        }
+
+        avg_angle /= neighbours.length - 1;
+        return avg_angle;
+    }
+
+    getDirection() {
+        return this.direction;
+    }
+
     tick() {
         // Move towards `direction` at `speed` velocity.
         this.graphics.x += this.direction.x * this.speed;
@@ -92,7 +107,12 @@ class Boid {
 
         this.graphics.rotation = getVectorAngle(this.direction);
 
-        this.avoidBorders();
+        // Compute turn.
+        let avoidBordersTurnAngle = this.avoidBorders();
+        let alignWithNeighboursAngle = this.alignWithNeighboursTurnAngle();
+        let requestedTurnAngle = (avoidBordersTurnAngle + alignWithNeighboursAngle) / 2;
+        let turn = this.getPossibleTurnRadians(requestedTurnAngle);
+        this.direction = turnVector(this.direction, turn);
     }
 };
 
@@ -118,8 +138,10 @@ let app = new PIXI.Application({ width: APPLICATION_WIDTH, height: APPLICATION_H
 document.body.appendChild(app.view);
 
 // Add it to the stage to render
-let position = getRandomPointInScreen();
-new Boid(app.stage, position);
+for (let i = 0; i < 100; i++) {
+    let position = getRandomPointInScreen();
+    new Boid(app.stage, position);
+}
 
 // Add a ticker callback to move the sprite back and forth
 let elapsed = 0.0;
