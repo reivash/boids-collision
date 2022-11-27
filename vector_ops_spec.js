@@ -1,4 +1,4 @@
-const {getVectorAngle, getRotationDelta} = require('./vector_ops');
+const {getVectorAngle, getRotationDelta, turnVector} = require('./vector_ops');
 
 describe('getVectorAngle', function() {
   it('(1, 0) = 0', function() {
@@ -54,5 +54,14 @@ describe('getRotationDelta', function() {
     radians = getRotationDelta(v2, v1);    
     expect(radians).toEqual(Math.PI / 2);
   });
-  
+});
+
+describe('turnVector', function() {
+  it('(1, 0) + (Math.PI / 2) = (0, 1)', function() {
+    v = {x: 1, y: 0};
+    angle = Math.PI / 2;
+
+    radians = turnVector(v, angle);    
+    expect(turnVector(v, angle)).toEqual({x: 0, y: 1});
+  });
 });

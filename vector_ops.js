@@ -27,8 +27,8 @@ function getRotationDelta(v1, v2) {
 }
 
 function turnVector(vector, radians) {
-    return {x: Math.cos(vector.x * radians) - Math.sin(vector.y * radians), 
-            y: Math.sin(vector.x * radians) - Math.cos(vector.y * radians)}
+    return {x: vector.x * Math.cos(radians) - vector.y * Math.sin(radians), 
+            y: vector.x * Math.sin(radians) + vector.y * Math.cos(radians)}
 }
 
 

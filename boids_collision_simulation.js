@@ -8,8 +8,8 @@ let boids = [];
 
 // TODO: Add random pio pio sounds that make the icon flash bigger.
 class Boid {
-    avoidBorderMinimumDistance = 15;
-    maxTickTurnRadians = 0.1;
+    avoidBorderMinimumDistance = 35;
+    maxTickTurnRadians = 0.3;
 
     constructor(appStage, position) {
         // Draw triangle pointing to angle 0 (to the right).
@@ -40,29 +40,42 @@ class Boid {
     avoidBorders() {
         // Avoid top collision.
         if (this.graphics.y < this.avoidBorderMinimumDistance) {
-            let requestedTurnRadians = getRotationDelta(this.direction, {x: 0, y: 1});
+            let requestedTurnRadians = getRotationDelta(this.direction, { x: 0, y: 1 });
             let possibleTurnRadians = this.getPossibleTurnRadians(requestedTurnRadians);
             this.direction = turnVector(this.direction, possibleTurnRadians);
-        }
+            console.log("Avoid top");
+        } else
 
         // Avoid bottom collision.
         if (this.graphics.y > (APPLICATION_HEIGHT - this.avoidBorderMinimumDistance)) {
-            this.direction = {x: 0, y: -1};
-        }
+            let requestedTurnRadians = getRotationDelta(this.direction, { x: 0, y: -1 });
+            let possibleTurnRadians = this.getPossibleTurnRadians(requestedTurnRadians);
+            this.direction = turnVector(this.direction, possibleTurnRadians);
+            console.log("Avoid bottom");
+        } else
 
         // Avoid left collision.
         if (this.graphics.x < this.avoidBorderMinimumDistance) {
-            this.direction = {x: 1, y: x};
-        }
-        
+            let requestedTurnRadians = getRotationDelta(this.direction, { x: 1, y: 0 });
+            let possibleTurnRadians = this.getPossibleTurnRadians(requestedTurnRadians);
+            this.direction = turnVector(this.direction, possibleTurnRadians);
+            console.log("Avoid left");
+        } else
+
         // Avoid right collision.
-        if (this.graphics.y > (APPLICATION_WIDTH - this.avoidBorderMinimumDistance)) {
-            this.direction = {x: -1, y:1};
+        if (this.graphics.x > (APPLICATION_WIDTH - this.avoidBorderMinimumDistance)) {
+            let requestedTurnRadians = getRotationDelta(this.direction, { x: -1, y: 0 });
+            let possibleTurnRadians = this.getPossibleTurnRadians(requestedTurnRadians);
+            this.direction = turnVector(this.direction, possibleTurnRadians);
+            console.log("Avoid right");
         }
     }
 
     getPossibleTurnRadians(requestedRadians) {
         // TODO: Add turn acceleration.
+        if (this.requestedRadians < 0) {
+            return -this.maxTickTurnRadians < requestedRadians ? requestedRadians : -this.maxTickTurnRadians;
+        }
         return this.maxTickTurnRadians > requestedRadians ? requestedRadians : this.maxTickTurnRadians;
     }
 
@@ -78,7 +91,7 @@ class Boid {
 };
 
 function getRandomNormalized2DVector() {
-    let vector = { x: Math.random(), y: Math.random()};
+    let vector = { x: Math.random(), y: Math.random() };
     let vectorLength = Math.sqrt(vector.x * vector.x) + (vector.y * vector.y);
     vector.x /= vectorLength;
     vector.y /= vectorLength;
