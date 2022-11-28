@@ -4,6 +4,7 @@ const APPLICATION_WIDTH = 640;
 const APPLICATION_HEIGHT = 360;
 const RED = 0xff0000;
 const BOIDS_SPEED = 3;
+const NEIGHBOUR_MAX_DISTANCE = 50;
 let boids = [];
 
 // TODO: Add random pio pio sounds that make the icon flash bigger.
@@ -76,10 +77,22 @@ class Boid {
         return this.turnDelta;
     }
 
+    getPosition() {
+        return { x: this.graphics.x, y: this.graphics.y };
+    }
+
     getNeighbours() {
         let neighbours = [];
-        // return neighbours;
-        return boids;
+        for (let i = 0; i < boids.length; i++) {
+            let b = boids[i];
+            if (b == this) continue;
+
+            if (distanceBetweenPoints(b.getPosition(),
+                this.getPosition()) < NEIGHBOUR_MAX_DISTANCE) {
+                neighbours.push(b);
+            }
+        }
+        return neighbours;
     }
 
     alignWithNeighboursTurnAngle() {
