@@ -4,13 +4,13 @@ const APPLICATION_WIDTH = 640;
 const APPLICATION_HEIGHT = 360;
 const RED = 0xff0000;
 const BOIDS_SPEED = 3;
-const NEIGHBOUR_MAX_DISTANCE = 50;
-const NEIGHBOUR_MIN_DISTANCE = 10;
+const NEIGHBOUR_MAX_DISTANCE = 80;
+const NEIGHBOUR_MIN_DISTANCE = 20;
+const AVOID_BORDER_DISTANCE = 50;
 let boids = [];
 
 // TODO: Add random pio pio sounds that make the icon flash bigger.
 class Boid {
-    avoidBorderMinimumDistance = 35;
     maxTurnSpeed = 0.1;
     turnAcceleration = 0.02;
     turnDelta = 0;
@@ -42,16 +42,16 @@ class Boid {
     }
 
     avoidBorders() {
-        if (this.graphics.y < this.avoidBorderMinimumDistance) {
+        if (this.graphics.y < AVOID_BORDER_DISTANCE) {
             // Avoid top collision.
             return getRotationDelta(this.direction, { x: 0, y: 1 });
-        } else if (this.graphics.y > (APPLICATION_HEIGHT - this.avoidBorderMinimumDistance)) {
+        } else if (this.graphics.y > (APPLICATION_HEIGHT - AVOID_BORDER_DISTANCE)) {
             // Avoid bottom collision.
             return getRotationDelta(this.direction, { x: 0, y: -1 });
-        } else if (this.graphics.x < this.avoidBorderMinimumDistance) {
+        } else if (this.graphics.x < AVOID_BORDER_DISTANCE) {
             // Avoid left collision.
             return getRotationDelta(this.direction, { x: 1, y: 0 });
-        } else if (this.graphics.x > (APPLICATION_WIDTH - this.avoidBorderMinimumDistance)) {
+        } else if (this.graphics.x > (APPLICATION_WIDTH - AVOID_BORDER_DISTANCE)) {
             // Avoid right collision.
             return getRotationDelta(this.direction, { x: -1, y: 0 });
         }
@@ -138,6 +138,29 @@ class Boid {
         return this.direction;
     }
 
+    moveInBetweenNeighbours(neighbours) {
+        if (neighbours.length == 0);
+        return 0;
+        let in_between_position;
+        for (let i = 0; i < neighbours.length; i++) {
+            let n = neighbours[i];
+            if (n == this) continue;
+
+            in_between_position.x += n.getPosition().x;
+            in_between_position.y += n.getPosition().y;
+        }
+        in_between_position.x /= neighbours.length;
+        in_between_position.y /= neighbours.length;
+
+        let in_between_direction = {
+            x: in_between_position.x - this.getPosition().x,
+            y: in_between_position.y - this.getPosition().y
+        };
+        in_between_direction = normalizeVector(in_between_direction);
+
+        return turnAngle(this.direction, in_between_direction);
+    }
+
     tick() {
         // Move towards `direction` at `speed` velocity.
         this.graphics.x += this.direction.x * this.speed;
@@ -148,9 +171,10 @@ class Boid {
         // Compute turn.
         let avoidBordersTurnAngle = this.avoidBorders();
         let neighbours = this.getNeighbours();
-        let alignWithNeighboursAngle = this.alignWithNeighboursTurnAngle(neighbours);
-        let separateFromNeighboursTooCloseAngle = this.separateFromNeighboursTooClose(neighbours);
-        let requestedTurnAngle = (avoidBordersTurnAngle + alignWithNeighboursAngle + separateFromNeighboursTooCloseAngle) / 3;
+        let alignmentAngle = this.alignWithNeighboursTurnAngle(neighbours);
+        let separationAngle = this.separateFromNeighboursTooClose(neighbours);
+        let cohesionAngle = this.moveInBetweenNeighbours(neighbours);
+        let requestedTurnAngle = (avoidBordersTurnAngle + alignmentAngle + separationAngle + cohesionAngle) / 4;
         let turn = this.getPossibleTurnRadians(requestedTurnAngle);
         this.direction = turnVector(this.direction, turn);
     }
