@@ -5,6 +5,7 @@ const APPLICATION_HEIGHT = 360;
 const RED = 0xff0000;
 const BOIDS_SPEED = 3;
 const NEIGHBOUR_MAX_DISTANCE = 50;
+const NEIGHBOUR_MIN_DISTANCE = 10;
 let boids = [];
 
 // TODO: Add random pio pio sounds that make the icon flash bigger.
@@ -95,8 +96,7 @@ class Boid {
         return neighbours;
     }
 
-    alignWithNeighboursTurnAngle() {
-        let neighbours = this.getNeighbours();
+    alignWithNeighboursTurnAngle(neighbours) {
         let avg_angle = 0;
         for (let i = 0; i < neighbours.length; i++) {
             let n = neighbours[i];
@@ -107,6 +107,31 @@ class Boid {
 
         avg_angle /= neighbours.length - 1;
         return avg_angle;
+    }
+
+    separateFromNeighboursTooClose(neighbours) {
+        let get_away_vector = { x: 0, y: 0 }
+        let count = 0;
+        for (let i = 0; i < neighbours.length; i++) {
+            let n = neighbours[i];
+            if (n == this) continue;
+
+            if (distanceBetweenPoints(n.getPosition(),
+                this.getPosition()) < NEIGHBOUR_MIN_DISTANCE) {
+                get_away_vector.x += this.getPosition().x - n.getPosition().x;
+                get_away_vector.y += this.getPosition().y - n.getPosition().y;
+                count++;
+            }
+        }
+
+        get_away_vector.x /= count;
+        get_away_vector.y /= count;
+
+        if (get_away_vector.x == 0 && get_away_vector.y == 0)
+            return 0;
+
+        get_away_vector = normalizeVector(get_away_vector);
+        return getRotationDelta(this.direction, get_away_vector);
     }
 
     getDirection() {
@@ -122,8 +147,10 @@ class Boid {
 
         // Compute turn.
         let avoidBordersTurnAngle = this.avoidBorders();
-        let alignWithNeighboursAngle = this.alignWithNeighboursTurnAngle();
-        let requestedTurnAngle = (avoidBordersTurnAngle + alignWithNeighboursAngle) / 2;
+        let neighbours = this.getNeighbours();
+        let alignWithNeighboursAngle = this.alignWithNeighboursTurnAngle(neighbours);
+        let separateFromNeighboursTooCloseAngle = this.separateFromNeighboursTooClose(neighbours);
+        let requestedTurnAngle = (avoidBordersTurnAngle + alignWithNeighboursAngle + separateFromNeighboursTooCloseAngle) / 3;
         let turn = this.getPossibleTurnRadians(requestedTurnAngle);
         this.direction = turnVector(this.direction, turn);
     }

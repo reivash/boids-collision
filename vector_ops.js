@@ -49,7 +49,13 @@ function distanceBetweenPoints(p1, p2) {
     return Math.sqrt(d.x * d.x, d.y * d.y);
 }
 
+function normalizeVector(v) {
+    let normal = Math.sqrt(v.x * v.x + v.y * v.y);
+    return {x: v.x / normal, y: v.y / normal};
+}
+
 module.exports.getVectorAngle = getVectorAngle;
 module.exports.getRotationDelta = getRotationDelta;
 module.exports.turnVector = turnVector;
 module.exports.distanceBetweenPoints = distanceBetweenPoints;
+module.exports.normalizeVector = normalizeVector;
