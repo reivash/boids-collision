@@ -4,7 +4,7 @@ const APPLICATION_WIDTH = 640;
 const APPLICATION_HEIGHT = 360;
 const RED = 0xff0000;
 const BOIDS_SPEED = 3;
-const NEIGHBOUR_MAX_DISTANCE = 80;
+const NEIGHBOUR_MAX_DISTANCE = 40;
 const NEIGHBOUR_MIN_DISTANCE = 20;
 const AVOID_BORDER_DISTANCE = 50;
 let boids = [];
@@ -169,12 +169,22 @@ class Boid {
         this.graphics.rotation = getVectorAngle(this.direction);
 
         // Compute turn.
+        // TODO: Boids are acting weird. Need to verify this logic.
         let avoidBordersTurnAngle = this.avoidBorders();
         let neighbours = this.getNeighbours();
-        let alignmentAngle = this.alignWithNeighboursTurnAngle(neighbours);
         let separationAngle = this.separateFromNeighboursTooClose(neighbours);
         let cohesionAngle = this.moveInBetweenNeighbours(neighbours);
-        let requestedTurnAngle = (avoidBordersTurnAngle + alignmentAngle + separationAngle + cohesionAngle) / 4;
+        let alignmentAngle = this.alignWithNeighboursTurnAngle(neighbours);
+        let requestedTurnAngle = 0;
+        if (avoidBordersTurnAngle != 0) {
+            requestedTurnAngle = avoidBordersTurnAngle;
+        } else if (separationAngle != 0) {
+            requestedTurnAngle = separationAngle;
+        } else if (cohesionAngle != 0) {
+            requestedTurnAngle = cohesionAngle;
+        } else if (alignmentAngle != 0) {
+            requestedTurnAngle = alignmentAngle;
+        } 
         let turn = this.getPossibleTurnRadians(requestedTurnAngle);
         this.direction = turnVector(this.direction, turn);
     }
