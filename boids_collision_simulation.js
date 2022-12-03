@@ -6,9 +6,11 @@ const RED = 0xff0000;
 const BLUE = 0x0000ff;
 const GREEN = 0x00ff00;
 const ORANGE = 0xffa500;
-const BOIDS_COUNT = 5;
+const YELLOW = 0xffff00;
+const PURPLE = 0xff00ff;
+const BOIDS_COUNT = 10;
 const BOIDS_SPEED = 3;
-const NEIGHBOUR_MAX_DISTANCE = 40;
+const NEIGHBOUR_MAX_DISTANCE = 60;
 const NEIGHBOUR_MIN_DISTANCE = 20;
 const AVOID_BORDER_DISTANCE = 50;
 let boids = [];
@@ -25,8 +27,8 @@ function createGraphicsArrow(color) {
 
 // TODO: Add random pio pio sounds that make the icon flash bigger.
 class Boid {
-    maxTurnSpeed = 0.5;
-    turnAcceleration = 0.2;
+    maxTurnSpeed = 0.2;
+    turnAcceleration = 0.1;
     turnDelta = 0;
     appStage = null;
 
@@ -101,20 +103,21 @@ class Boid {
     }
 
     alignWithNeighboursTurnAngle(neighbours) {
+        if (neighbours.length == 0) 
+            return 0;
+
         let avg_angle = 0;
         for (let i = 0; i < neighbours.length; i++) {
             let n = neighbours[i];
-            if (n == this) continue;
-
             avg_angle += getVectorAngle(n.getDirection());
         }
 
-        avg_angle /= neighbours.length - 1;
-        return avg_angle;
+        avg_angle /= neighbours.length;
+        return  avg_angle - getVectorAngle(this.getDirection());
     }
 
     separateFromNeighboursTooClose(neighbours) {
-        let get_away_vector = { x: 0, y: 0 }
+        let get_away_vector = { x: 0, y: 0 };
         let count = 0;
         for (let i = 0; i < neighbours.length; i++) {
             let n = neighbours[i];
@@ -144,9 +147,9 @@ class Boid {
     }
 
     moveInBetweenNeighbours(neighbours) {
-        if (neighbours.length == 0);
-        return 0;
-        let in_between_position;
+        if (neighbours.length == 0)
+            return 0;
+        let in_between_position = { x: 0, y: 0 };
         for (let i = 0; i < neighbours.length; i++) {
             let n = neighbours[i];
             if (n == this) continue;
@@ -163,7 +166,7 @@ class Boid {
         };
         in_between_direction = normalizeVector(in_between_direction);
 
-        return turnAngle(this.direction, in_between_direction);
+        return getRotationDelta(this.direction, in_between_direction);
     }
 
     tick() {
@@ -189,9 +192,14 @@ class Boid {
          if (separationAngle != 0) {
             requestedTurnAngle = separationAngle;
             this.switchColor(BLUE);
-        } else if (cohesionAngle != 0 || alignmentAngle != 0) {
-            // requestedTurnAngle = (cohesionAngle+alignmentAngle) / 2;
+        } else if (alignmentAngle != 0) {
+            requestedTurnAngle = alignmentAngle;
+            this.switchColor(YELLOW);
         } 
+        // else if (alignmentAngle != 0) {
+        //     requestedTurnAngle = alignmentAngle;
+        //     this.switchColor(PURPLE);
+        // }
         let turn = getPossibleTurnRadians(this.turnDelta, this.turnAcceleration, this.maxTurnSpeed, requestedTurnAngle);
         this.direction = turnVector(this.direction, turn);
     }
