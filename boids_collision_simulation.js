@@ -83,8 +83,10 @@ class Boid {
     }
 
     getPosition() {
-        return { x: this.graphics.x, 
-                 y: this.graphics.y };
+        return {
+            x: this.graphics.x,
+            y: this.graphics.y
+        };
     }
 
     getNeighbours(distance) {
@@ -94,7 +96,7 @@ class Boid {
             if (b == this) continue;
 
             if (distanceBetweenPoints(b.getPosition(),
-                                      this.getPosition()) < distance) {
+                this.getPosition()) < distance) {
                 neighbours.push(b);
                 this.switchColor(ORANGE);
             }
@@ -103,7 +105,7 @@ class Boid {
     }
 
     alignWithNeighboursTurnAngle(neighbours) {
-        if (neighbours.length == 0) 
+        if (neighbours.length == 0)
             return 0;
 
         let avg_angle = 0;
@@ -113,7 +115,7 @@ class Boid {
         }
 
         avg_angle /= neighbours.length;
-        return  avg_angle - getVectorAngle(this.getDirection());
+        return avg_angle - getVectorAngle(this.getDirection());
     }
 
     separateFromNeighboursTooClose(neighbours) {
@@ -124,7 +126,7 @@ class Boid {
             if (n == this) continue;
 
             if (distanceBetweenPoints(n.getPosition(),
-                                      this.getPosition()) < NEIGHBOUR_MIN_DISTANCE) {
+                this.getPosition()) < NEIGHBOUR_MIN_DISTANCE) {
                 get_away_vector.x += this.getPosition().x - n.getPosition().x;
                 get_away_vector.y += this.getPosition().y - n.getPosition().y;
                 count++;
@@ -147,12 +149,12 @@ class Boid {
     }
 
     moveInBetweenNeighbours(neighbours) {
-        if (neighbours.length == 0)
+        if (neighbours.length < 2)
             return 0;
+
         let in_between_position = { x: 0, y: 0 };
         for (let i = 0; i < neighbours.length; i++) {
             let n = neighbours[i];
-            if (n == this) continue;
 
             in_between_position.x += n.getPosition().x;
             in_between_position.y += n.getPosition().y;
@@ -189,17 +191,16 @@ class Boid {
             requestedTurnAngle = avoidBordersTurnAngle;
             this.switchColor(GREEN);
         } else
-         if (separationAngle != 0) {
-            requestedTurnAngle = separationAngle;
-            this.switchColor(BLUE);
-        } else if (alignmentAngle != 0) {
-            requestedTurnAngle = alignmentAngle;
-            this.switchColor(YELLOW);
-        } 
-        // else if (alignmentAngle != 0) {
-        //     requestedTurnAngle = alignmentAngle;
-        //     this.switchColor(PURPLE);
-        // }
+            if (separationAngle != 0) {
+                requestedTurnAngle = separationAngle;
+                this.switchColor(BLUE);
+            } else if (Math.abs(alignmentAngle) > 0.1 ) {
+                requestedTurnAngle = alignmentAngle;
+                this.switchColor(YELLOW);
+            } else if (cohesionAngle != 0) {
+                requestedTurnAngle = cohesionAngle;
+                this.switchColor(PURPLE);
+            }
         let turn = getPossibleTurnRadians(this.turnDelta, this.turnAcceleration, this.maxTurnSpeed, requestedTurnAngle);
         this.direction = turnVector(this.direction, turn);
     }
