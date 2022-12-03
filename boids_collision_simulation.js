@@ -5,6 +5,8 @@ const APPLICATION_HEIGHT = 768;
 const RED = 0xff0000;
 const BLUE = 0x0000ff;
 const GREEN = 0x00ff00;
+const ORANGE = 0xffa500;
+const BOIDS_COUNT = 5;
 const BOIDS_SPEED = 3;
 const NEIGHBOUR_MAX_DISTANCE = 40;
 const NEIGHBOUR_MIN_DISTANCE = 20;
@@ -79,18 +81,20 @@ class Boid {
     }
 
     getPosition() {
-        return { x: this.graphics.x, y: this.graphics.y };
+        return { x: this.graphics.x, 
+                 y: this.graphics.y };
     }
 
-    getNeighbours() {
+    getNeighbours(distance) {
         let neighbours = [];
         for (let i = 0; i < boids.length; i++) {
             let b = boids[i];
             if (b == this) continue;
 
             if (distanceBetweenPoints(b.getPosition(),
-                this.getPosition()) < NEIGHBOUR_MAX_DISTANCE) {
+                                      this.getPosition()) < distance) {
                 neighbours.push(b);
+                this.switchColor(ORANGE);
             }
         }
         return neighbours;
@@ -117,7 +121,7 @@ class Boid {
             if (n == this) continue;
 
             if (distanceBetweenPoints(n.getPosition(),
-                this.getPosition()) < NEIGHBOUR_MIN_DISTANCE) {
+                                      this.getPosition()) < NEIGHBOUR_MIN_DISTANCE) {
                 get_away_vector.x += this.getPosition().x - n.getPosition().x;
                 get_away_vector.y += this.getPosition().y - n.getPosition().y;
                 count++;
@@ -173,7 +177,7 @@ class Boid {
         // Compute turn.
         // TODO: Boids are acting weird. Need to verify this logic.
         let avoidBordersTurnAngle = this.avoidBorders();
-        let neighbours = this.getNeighbours();
+        let neighbours = this.getNeighbours(NEIGHBOUR_MAX_DISTANCE);
         let separationAngle = this.separateFromNeighboursTooClose(neighbours);
         let cohesionAngle = this.moveInBetweenNeighbours(neighbours);
         let alignmentAngle = this.alignWithNeighboursTurnAngle(neighbours);
@@ -215,7 +219,7 @@ let app = new PIXI.Application({ width: APPLICATION_WIDTH, height: APPLICATION_H
 document.body.appendChild(app.view);
 
 // Add it to the stage to render
-for (let i = 0; i < 2; i++) {
+for (let i = 0; i < BOIDS_COUNT; i++) {
     let position = getRandomPointInScreen();
     new Boid(app.stage, position);
 }

@@ -45,8 +45,10 @@ function turnVector(vector, radians) {
 }
 
 function distanceBetweenPoints(p1, p2) {
-    let d = {x: p2.x - p1.x, y: p2.y - p1.y};
-    return Math.sqrt(d.x * d.x, d.y * d.y);
+    let d = {x: p2.x - p1.x, 
+             y: p2.y - p1.y};
+    return Math.sqrt(d.x * d.x + 
+                     d.y * d.y);
 }
 
 function normalizeVector(v) {
