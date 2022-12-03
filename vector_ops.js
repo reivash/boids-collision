@@ -39,7 +39,7 @@ function smallValuesVectorToZero(vector) {
 
 function turnVector(vector, radians) {
     let turnedVector = {x: vector.x * Math.cos(radians) - vector.y * Math.sin(radians), 
-                  y: vector.x * Math.sin(radians) + vector.y * Math.cos(radians)};
+                        y: vector.x * Math.sin(radians) + vector.y * Math.cos(radians)};
 
     return smallValuesVectorToZero(turnedVector);
 }

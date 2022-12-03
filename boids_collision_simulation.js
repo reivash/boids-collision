@@ -8,8 +8,9 @@ const GREEN = 0x00ff00;
 const ORANGE = 0xffa500;
 const YELLOW = 0xffff00;
 const PURPLE = 0xff00ff;
-const BOIDS_COUNT = 10;
+const BOIDS_COUNT = 100;
 const BOIDS_SPEED = 3;
+const ALIGNMENT_THRESHOLD = 0.01;
 const NEIGHBOUR_MAX_DISTANCE = 60;
 const NEIGHBOUR_MIN_DISTANCE = 20;
 const AVOID_BORDER_DISTANCE = 50;
@@ -108,14 +109,17 @@ class Boid {
         if (neighbours.length == 0)
             return 0;
 
-        let avg_angle = 0;
+        let avg_direction = { x: 0, y: 0 };
         for (let i = 0; i < neighbours.length; i++) {
             let n = neighbours[i];
-            avg_angle += getVectorAngle(n.getDirection());
+            avg_direction.x += n.getDirection().x;
+            avg_direction.y += n.getDirection().y;
         }
 
-        avg_angle /= neighbours.length;
-        return avg_angle - getVectorAngle(this.getDirection());
+        avg_direction.x /= neighbours.length;
+        avg_direction.y /= neighbours.length;
+
+        return getRotationDelta(this.direction, avg_direction);
     }
 
     separateFromNeighboursTooClose(neighbours) {
@@ -190,17 +194,17 @@ class Boid {
         if (avoidBordersTurnAngle != 0) {
             requestedTurnAngle = avoidBordersTurnAngle;
             this.switchColor(GREEN);
-        } else
-            if (separationAngle != 0) {
-                requestedTurnAngle = separationAngle;
-                this.switchColor(BLUE);
-            } else if (Math.abs(alignmentAngle) > 0.1 ) {
-                requestedTurnAngle = alignmentAngle;
-                this.switchColor(YELLOW);
-            } else if (cohesionAngle != 0) {
-                requestedTurnAngle = cohesionAngle;
-                this.switchColor(PURPLE);
-            }
+        } else if (separationAngle != 0) {
+            requestedTurnAngle = separationAngle;
+            this.switchColor(BLUE);
+        } else if (Math.abs(alignmentAngle) > ALIGNMENT_THRESHOLD) {
+            requestedTurnAngle = alignmentAngle;
+            this.switchColor(YELLOW);
+        } 
+        // else if (cohesionAngle != 0) {
+        //     requestedTurnAngle = cohesionAngle;
+        //     this.switchColor(PURPLE);
+        // }
         let turn = getPossibleTurnRadians(this.turnDelta, this.turnAcceleration, this.maxTurnSpeed, requestedTurnAngle);
         this.direction = turnVector(this.direction, turn);
     }
