@@ -14,7 +14,10 @@ const ALIGNMENT_THRESHOLD = 0.1;
 const NEIGHBOUR_MAX_DISTANCE = 60;
 const NEIGHBOUR_MIN_DISTANCE = 20;
 const AVOID_BORDER_DISTANCE = 50;
+const TWEET_PROBABILITY = 0.0001;
 let boids = [];
+
+PIXI.sound.add('bird_chirp', 'resources/bird-chirp.wav');
 
 function createGraphicsArrow(color) {
     let graphics = new PIXI.Graphics();
@@ -26,13 +29,32 @@ function createGraphicsArrow(color) {
     return graphics;
 }
 
-// TODO: Add random pio pio sounds that make the icon flash bigger.
+
+// Plays a sound and scales the `graphics` object to imitate the 
+// a bird.
+class TweetEffect {
+    constructor(boid) {
+        this.boid = boid;
+        PIXI.sound.play('bird_chirp');
+    }
+
+    remove() {
+        this.boid.removeTweetEffect();
+    }
+
+    tick() {
+        let scale = Math.random() * 5;
+        this.boid.setScale(scale);
+    }
+};
+
 class Boid {
     maxTurnSpeed = 0.2;
     turnAcceleration = 0.1;
     turnDelta = 0;
     appStage = null;
     scale = 1;
+    tweet_effect = null;
 
     constructor(appStage, position) {
         // Draw triangle pointing to angle 0 (to the right).
@@ -90,6 +112,10 @@ class Boid {
             x: this.graphics.x,
             y: this.graphics.y
         };
+    }
+
+    setScale(scale) {
+        this.scale = scale;
     }
 
     getNeighbours(distance) {
@@ -154,6 +180,10 @@ class Boid {
         return this.direction;
     }
 
+    removeTweetEffect() {
+        this.tweet_effect = null;
+    }
+
     moveInBetweenNeighbours(neighbours) {
         if (neighbours.length < 2)
             return 0;
@@ -177,10 +207,13 @@ class Boid {
         return getRotationDelta(this.direction, in_between_direction);
     }
 
-    randomScale() {
-        if (Math.random() < 0.1) {
-            this.scale = Math.random() * 5;
-            this.graphics.scale.set(this.scale, this.scale);
+    randomTweetSoundAndScaling() {
+        if (this.tweet_effect == null) {
+            if (Math.random() < TWEET_PROBABILITY) {
+                this.tweet_effect = new TweetEffect(this);
+            }
+        } else {
+            this.tweet_effect.tick();
         }
     }
 
@@ -190,6 +223,7 @@ class Boid {
         this.graphics.x += this.direction.x * this.speed;
         this.graphics.y += this.direction.y * this.speed;
 
+        this.graphics.scale.set(this.scale, this.scale);
         this.graphics.rotation = getVectorAngle(this.direction);
 
         // Compute turn.
@@ -216,7 +250,7 @@ class Boid {
         this.direction = turnVector(this.direction, turn);
 
 
-        this.randomScale();
+        this.randomTweetSoundAndScaling();
     }
 };
 
