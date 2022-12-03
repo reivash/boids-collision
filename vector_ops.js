@@ -54,8 +54,32 @@ function normalizeVector(v) {
     return {x: v.x / normal, y: v.y / normal};
 }
 
+function getPossibleTurnRadians(currentTurnSpeed, turnAcceleration, maxTurnSpeed, requestedTurn) {
+    // If we want to turn more than we can, turn only what we can.
+    if (requestedTurn >= 0) {
+        if (turnAcceleration < requestedTurn) { requestedTurn = turnAcceleration; }
+    } else {
+        if (requestedTurn < -turnAcceleration) { requestedTurn = -turnAcceleration; }
+    }
+
+    // Compute turn speed based on turn acceleration.
+    if (requestedTurn >= 0) {
+        currentTurnSpeed += turnAcceleration > requestedTurn ? requestedTurn : turnAcceleration;
+    } else {
+        currentTurnSpeed += -turnAcceleration < requestedTurn ? requestedTurn : -turnAcceleration;
+    }
+    
+    
+    // // If we turn more than we can, turn only what we can.
+    if (currentTurnSpeed < -maxTurnSpeed) currentTurnSpeed = -maxTurnSpeed;
+    if (currentTurnSpeed > maxTurnSpeed) currentTurnSpeed = maxTurnSpeed;
+
+    return currentTurnSpeed;
+}
+
 module.exports.getVectorAngle = getVectorAngle;
 module.exports.getRotationDelta = getRotationDelta;
 module.exports.turnVector = turnVector;
 module.exports.distanceBetweenPoints = distanceBetweenPoints;
 module.exports.normalizeVector = normalizeVector;
+module.exports.getPossibleTurnRadians = getPossibleTurnRadians;

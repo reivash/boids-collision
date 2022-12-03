@@ -1,7 +1,7 @@
 'use strict';
 
-const APPLICATION_WIDTH = 256;
-const APPLICATION_HEIGHT = 256;
+const APPLICATION_WIDTH = 1024;
+const APPLICATION_HEIGHT = 768;
 const RED = 0xff0000;
 const BOIDS_SPEED = 3;
 const NEIGHBOUR_MAX_DISTANCE = 40;
@@ -104,9 +104,10 @@ class Boid {
             }
         }
 
+        if (count == 0)
+            return 0;
         get_away_vector.x /= count;
         get_away_vector.y /= count;
-
         if (get_away_vector.x == 0 && get_away_vector.y == 0)
             return 0;
 
@@ -164,7 +165,7 @@ class Boid {
         } else if (cohesionAngle != 0 || alignmentAngle != 0) {
             // requestedTurnAngle = (cohesionAngle+alignmentAngle) / 2;
         } 
-        let turn = getPossibleTurnRadians(this.turnDelta, turnAcceleration, maxTurnSpeed, requestedTurnAngle);
+        let turn = getPossibleTurnRadians(this.turnDelta, this.turnAcceleration, this.maxTurnSpeed, requestedTurnAngle);
         this.direction = turnVector(this.direction, turn);
     }
 };
@@ -191,7 +192,7 @@ let app = new PIXI.Application({ width: APPLICATION_WIDTH, height: APPLICATION_H
 document.body.appendChild(app.view);
 
 // Add it to the stage to render
-for (let i = 0; i < 1; i++) {
+for (let i = 0; i < 2; i++) {
     let position = getRandomPointInScreen();
     new Boid(app.stage, position);
 }
