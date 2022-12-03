@@ -10,7 +10,7 @@ const YELLOW = 0xffff00;
 const PURPLE = 0xff00ff;
 const BOIDS_COUNT = 100;
 const BOIDS_SPEED = 3;
-const ALIGNMENT_THRESHOLD = 0.01;
+const ALIGNMENT_THRESHOLD = 0.1;
 const NEIGHBOUR_MAX_DISTANCE = 60;
 const NEIGHBOUR_MIN_DISTANCE = 20;
 const AVOID_BORDER_DISTANCE = 50;
@@ -184,7 +184,6 @@ class Boid {
         this.graphics.rotation = getVectorAngle(this.direction);
 
         // Compute turn.
-        // TODO: Boids are acting weird. Need to verify this logic.
         let avoidBordersTurnAngle = this.avoidBorders();
         let neighbours = this.getNeighbours(NEIGHBOUR_MAX_DISTANCE);
         let separationAngle = this.separateFromNeighboursTooClose(neighbours);
@@ -200,11 +199,10 @@ class Boid {
         } else if (Math.abs(alignmentAngle) > ALIGNMENT_THRESHOLD) {
             requestedTurnAngle = alignmentAngle;
             this.switchColor(YELLOW);
-        } 
-        // else if (cohesionAngle != 0) {
-        //     requestedTurnAngle = cohesionAngle;
-        //     this.switchColor(PURPLE);
-        // }
+        } else if (cohesionAngle != 0) {
+            requestedTurnAngle = cohesionAngle;
+            this.switchColor(PURPLE);
+        }
         let turn = getPossibleTurnRadians(this.turnDelta, this.turnAcceleration, this.maxTurnSpeed, requestedTurnAngle);
         this.direction = turnVector(this.direction, turn);
     }
