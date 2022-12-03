@@ -14,7 +14,7 @@ const ALIGNMENT_THRESHOLD = 0.1;
 const NEIGHBOUR_MAX_DISTANCE = 60;
 const NEIGHBOUR_MIN_DISTANCE = 20;
 const AVOID_BORDER_DISTANCE = 50;
-const TWEET_PROBABILITY = 0.0001;
+const TWEET_PROBABILITY = 0.00025;
 let boids = [];
 
 PIXI.sound.add('bird_chirp', 'resources/bird-chirp.wav');
@@ -33,8 +33,12 @@ function createGraphicsArrow(color) {
 // Plays a sound and scales the `graphics` object to imitate the 
 // a bird.
 class TweetEffect {
+    tickCount = 0;
+    maxTick = 3000;
+
     constructor(boid) {
         this.boid = boid;
+        this.tickCount = 1;
         PIXI.sound.play('bird_chirp');
     }
 
@@ -42,9 +46,17 @@ class TweetEffect {
         this.boid.removeTweetEffect();
     }
 
+    getTickScale(tickCount) {
+        return Math.min(0.95 + (5 / tickCount), 3);
+    }
+
     tick() {
-        let scale = Math.random() * 5;
+        let scale = this.getTickScale(this.tickCount);
         this.boid.setScale(scale);
+
+        if (this.tickCount >= this.maxTick) 
+            this.remove();
+        this.tickCount++;
     }
 };
 
@@ -54,7 +66,7 @@ class Boid {
     turnDelta = 0;
     appStage = null;
     scale = 1;
-    tweet_effect = null;
+    tweetEffect = null;
 
     constructor(appStage, position) {
         // Draw triangle pointing to angle 0 (to the right).
@@ -181,7 +193,7 @@ class Boid {
     }
 
     removeTweetEffect() {
-        this.tweet_effect = null;
+        this.tweetEffect = null;
     }
 
     moveInBetweenNeighbours(neighbours) {
@@ -208,12 +220,12 @@ class Boid {
     }
 
     randomTweetSoundAndScaling() {
-        if (this.tweet_effect == null) {
+        if (this.tweetEffect == null) {
             if (Math.random() < TWEET_PROBABILITY) {
-                this.tweet_effect = new TweetEffect(this);
+                this.tweetEffect = new TweetEffect(this);
             }
         } else {
-            this.tweet_effect.tick();
+            this.tweetEffect.tick();
         }
     }
 
