@@ -1,7 +1,7 @@
 'use strict';
 
-const APPLICATION_WIDTH = 640;
-const APPLICATION_HEIGHT = 360;
+const APPLICATION_WIDTH = 256;
+const APPLICATION_HEIGHT = 256;
 const RED = 0xff0000;
 const BOIDS_SPEED = 3;
 const NEIGHBOUR_MAX_DISTANCE = 40;
@@ -11,8 +11,8 @@ let boids = [];
 
 // TODO: Add random pio pio sounds that make the icon flash bigger.
 class Boid {
-    maxTurnSpeed = 0.1;
-    turnAcceleration = 0.02;
+    maxTurnSpeed = 0.5;
+    turnAcceleration = 0.2;
     turnDelta = 0;
 
     constructor(appStage, position) {
@@ -56,26 +56,6 @@ class Boid {
             return getRotationDelta(this.direction, { x: -1, y: 0 });
         }
         return 0;
-    }
-
-    getPossibleTurnRadians(requestedRadians) {
-        // Compute turn speed based on turn acceleration.
-        if (this.requestedRadians < 0) {
-            this.turnDelta += -this.turnAcceleration < requestedRadians ? requestedRadians : -this.turnAcceleration;
-        }
-        this.turnDelta += this.turnAcceleration > requestedRadians ? requestedRadians : this.turnAcceleration;
-
-        // If we turn more than we can, turn only what we can.
-        if (this.turnDelta < -this.maxTurnSpeed) this.turnDelta = -this.maxTurnSpeed;
-        if (this.turnDelta > this.maxTurnSpeed) this.turnDelta = this.maxTurnSpeed;
-        // If we turn more than we want, turn only what we want.
-        if (requestedRadians < 0) {
-            if (this.turnDelta < requestedRadians) { this.turnDelta = -requestedRadians; }
-        } else {
-            if (this.turnDelta > requestedRadians) { this.turnDelta = requestedRadians; }
-        }
-
-        return this.turnDelta;
     }
 
     getPosition() {
@@ -178,14 +158,13 @@ class Boid {
         let requestedTurnAngle = 0;
         if (avoidBordersTurnAngle != 0) {
             requestedTurnAngle = avoidBordersTurnAngle;
-        } else if (separationAngle != 0) {
-            requestedTurnAngle = separationAngle;
-        } else if (cohesionAngle != 0) {
-            requestedTurnAngle = cohesionAngle;
-        } else if (alignmentAngle != 0) {
-            requestedTurnAngle = alignmentAngle;
+        } else
+         if (separationAngle != 0) {
+            // requestedTurnAngle = separationAngle;
+        } else if (cohesionAngle != 0 || alignmentAngle != 0) {
+            // requestedTurnAngle = (cohesionAngle+alignmentAngle) / 2;
         } 
-        let turn = this.getPossibleTurnRadians(requestedTurnAngle);
+        let turn = getPossibleTurnRadians(this.turnDelta, turnAcceleration, maxTurnSpeed, requestedTurnAngle);
         this.direction = turnVector(this.direction, turn);
     }
 };
@@ -212,7 +191,7 @@ let app = new PIXI.Application({ width: APPLICATION_WIDTH, height: APPLICATION_H
 document.body.appendChild(app.view);
 
 // Add it to the stage to render
-for (let i = 0; i < 100; i++) {
+for (let i = 0; i < 1; i++) {
     let position = getRandomPointInScreen();
     new Boid(app.stage, position);
 }
