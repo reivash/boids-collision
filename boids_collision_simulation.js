@@ -3,27 +3,36 @@
 const APPLICATION_WIDTH = 1024;
 const APPLICATION_HEIGHT = 768;
 const RED = 0xff0000;
+const BLUE = 0x0000ff;
+const GREEN = 0x00ff00;
 const BOIDS_SPEED = 3;
 const NEIGHBOUR_MAX_DISTANCE = 40;
 const NEIGHBOUR_MIN_DISTANCE = 20;
 const AVOID_BORDER_DISTANCE = 50;
 let boids = [];
 
+function createGraphicsArrow(color) {
+    let graphics = new PIXI.Graphics();
+    graphics.beginFill(color);
+    graphics.moveTo(5, 0);
+    graphics.lineTo(-10, 5);
+    graphics.lineTo(-10, -5);
+    graphics.endFill();
+    return graphics;
+}
+
 // TODO: Add random pio pio sounds that make the icon flash bigger.
 class Boid {
     maxTurnSpeed = 0.5;
     turnAcceleration = 0.2;
     turnDelta = 0;
+    appStage = null;
 
     constructor(appStage, position) {
         // Draw triangle pointing to angle 0 (to the right).
-        this.graphics = new PIXI.Graphics();
-        this.graphics.beginFill(RED);
-        this.graphics.moveTo(5, 0);
-        this.graphics.lineTo(-10, 5);
-        this.graphics.lineTo(-10, -5);
-        this.graphics.endFill();
+        this.graphics = createGraphicsArrow(RED);
         appStage.addChild(this.graphics);
+        this.appStage = appStage;
 
         // Set position.
         this.graphics.x = position.x;
@@ -39,6 +48,17 @@ class Boid {
 
         // Add to global boids vector.
         boids.push(this);
+    }
+
+    switchColor(color) {
+        let position = this.getPosition();
+        let rotation = this.graphics.rotation;
+        this.appStage.removeChild(this.graphics);
+        this.graphics = createGraphicsArrow(color);
+        this.graphics.x = position.x;
+        this.graphics.y = position.y;
+        this.graphics.rotation = rotation;
+        this.appStage.addChild(this.graphics);
     }
 
     avoidBorders() {
@@ -143,6 +163,7 @@ class Boid {
     }
 
     tick() {
+        this.switchColor(RED);
         // Move towards `direction` at `speed` velocity.
         this.graphics.x += this.direction.x * this.speed;
         this.graphics.y += this.direction.y * this.speed;
@@ -159,9 +180,11 @@ class Boid {
         let requestedTurnAngle = 0;
         if (avoidBordersTurnAngle != 0) {
             requestedTurnAngle = avoidBordersTurnAngle;
+            this.switchColor(GREEN);
         } else
          if (separationAngle != 0) {
-            // requestedTurnAngle = separationAngle;
+            requestedTurnAngle = separationAngle;
+            this.switchColor(BLUE);
         } else if (cohesionAngle != 0 || alignmentAngle != 0) {
             // requestedTurnAngle = (cohesionAngle+alignmentAngle) / 2;
         } 
