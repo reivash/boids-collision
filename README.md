@@ -1,4 +1,4 @@
-# boids-collision
+# Boids collision
 Boids collision simulation, based on [Boids emergent behavior algorithm from 1986](https://en.wikipedia.org/wiki/Boids).
 
 
