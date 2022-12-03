@@ -32,6 +32,7 @@ class Boid {
     turnAcceleration = 0.1;
     turnDelta = 0;
     appStage = null;
+    scale = 1;
 
     constructor(appStage, position) {
         // Draw triangle pointing to angle 0 (to the right).
@@ -63,6 +64,7 @@ class Boid {
         this.graphics.x = position.x;
         this.graphics.y = position.y;
         this.graphics.rotation = rotation;
+        this.graphics.scale.set(this.scale, this.scale);
         this.appStage.addChild(this.graphics);
     }
 
@@ -175,6 +177,13 @@ class Boid {
         return getRotationDelta(this.direction, in_between_direction);
     }
 
+    randomScale() {
+        if (Math.random() < 0.1) {
+            this.scale = Math.random() * 5;
+            this.graphics.scale.set(this.scale, this.scale);
+        }
+    }
+
     tick() {
         this.switchColor(RED);
         // Move towards `direction` at `speed` velocity.
@@ -205,6 +214,9 @@ class Boid {
         }
         let turn = getPossibleTurnRadians(this.turnDelta, this.turnAcceleration, this.maxTurnSpeed, requestedTurnAngle);
         this.direction = turnVector(this.direction, turn);
+
+
+        this.randomScale();
     }
 };
 
