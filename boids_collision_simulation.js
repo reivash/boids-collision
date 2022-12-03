@@ -8,16 +8,21 @@ const GREEN = 0x00ff00;
 const ORANGE = 0xffa500;
 const YELLOW = 0xffff00;
 const PURPLE = 0xff00ff;
+const WHITE = 0xffffff;
 const BOIDS_COUNT = 100;
 const BOIDS_SPEED = 3;
+const BOID_FRAGMENT_SPEED = 8;
 const ALIGNMENT_THRESHOLD = 0.1;
 const NEIGHBOUR_MAX_DISTANCE = 60;
 const NEIGHBOUR_MIN_DISTANCE = 20;
 const AVOID_BORDER_DISTANCE = 50;
 const TWEET_PROBABILITY = 0.00025;
+const EXPLODE_DISTANCE = 15;
 let boids = [];
+let boids_exploded_effect = [];
 
 PIXI.sound.add('bird_chirp', 'resources/bird-chirp.wav');
+PIXI.sound.add('explosion', 'resources/explosion.wav');
 
 function createGraphicsArrow(color) {
     let graphics = new PIXI.Graphics();
@@ -60,6 +65,56 @@ class TweetEffect {
     }
 };
 
+class BoidFragment {
+    maxTick = 20;
+    tickCount = 1;
+    scale = 0.8;
+    dead = false;
+
+    constructor(appStage, position) {
+        this.graphics = createGraphicsArrow(WHITE);
+        this.graphics.x = position.x;
+        this.graphics.y = position.y;
+        this.appStage = appStage;
+        this.appStage.addChild(this.graphics);
+        this.direction = getRandomNormalized2DVector();
+        this.speed = BOID_FRAGMENT_SPEED;
+    }
+
+    tick() {
+        if (this.dead) {
+            return;
+        }
+
+        this.graphics.scale.set(this.scale, this.scale);
+        this.graphics.rotation = getVectorAngle(this.direction);
+        this.graphics.x += this.direction.x * this.speed;
+        this.graphics.y += this.direction.y * this.speed;
+        this.tickCount++;
+
+        if (this.tickCount >= this.maxTick) {
+            this.dead = true;
+            this.appStage.removeChild(this.graphics);
+        }
+    }
+}
+
+class BoidExplodedEffect {
+    fragmentCount = 5;
+    fragments = [];
+    
+    constructor(appStage, position) {
+        boids_exploded_effect.push(this);
+        for (let i = 0; i < this.fragmentCount; i++) {
+            this.fragments.push(new BoidFragment(appStage, position));
+        }
+    }
+
+    tick() {
+        this.fragments.forEach(f => f.tick());
+    }
+};
+
 class Boid {
     maxTurnSpeed = 0.2;
     turnAcceleration = 0.1;
@@ -67,6 +122,7 @@ class Boid {
     appStage = null;
     scale = 1;
     tweetEffect = null;
+    dead = false;
 
     constructor(appStage, position) {
         // Draw triangle pointing to angle 0 (to the right).
@@ -81,8 +137,6 @@ class Boid {
 
         // Direction and speed are randomly initialized.
         this.direction = getRandomNormalized2DVector();
-        if (Math.random() > 0.5) this.direction.x *= -1;
-        if (Math.random() > 0.5) this.direction.y *= -1;
 
         this.speed = BOIDS_SPEED;
 
@@ -196,6 +250,30 @@ class Boid {
         this.tweetEffect = null;
     }
 
+    explode() {
+        this.dead = true;
+        this.appStage.removeChild(this.graphics);
+        PIXI.sound.play('explosion');
+        new BoidExplodedEffect(this.appStage, this.getPosition());
+    }
+
+    explodeIfTooCloseToNeighbour(neighbours) {
+        for (let i = 0; i < neighbours.length; i++) {
+            let n = neighbours[i];
+            if (n == this) continue;
+
+            if (!n.isDead() && 
+                distanceBetweenPoints(n.getPosition(),
+                this.getPosition()) < EXPLODE_DISTANCE) {
+                this.explode();
+            }
+        }
+    }
+
+    isDead() {
+        return this.dead;
+    }
+
     moveInBetweenNeighbours(neighbours) {
         if (neighbours.length < 2)
             return 0;
@@ -230,6 +308,10 @@ class Boid {
     }
 
     tick() {
+        if (this.dead) {
+            return;
+        }
+
         this.switchColor(RED);
         // Move towards `direction` at `speed` velocity.
         this.graphics.x += this.direction.x * this.speed;
@@ -261,6 +343,7 @@ class Boid {
         let turn = getPossibleTurnRadians(this.turnDelta, this.turnAcceleration, this.maxTurnSpeed, requestedTurnAngle);
         this.direction = turnVector(this.direction, turn);
 
+        this.explodeIfTooCloseToNeighbour(neighbours);
 
         this.randomTweetSoundAndScaling();
     }
@@ -271,6 +354,9 @@ function getRandomNormalized2DVector() {
     let vectorLength = Math.sqrt(vector.x * vector.x) + Math.sqrt(vector.y * vector.y);
     vector.x /= vectorLength;
     vector.y /= vectorLength;
+    
+    if (Math.random() > 0.5) vector.x *= -1;
+    if (Math.random() > 0.5) vector.y *= -1;
     return vector;
 }
 
@@ -298,4 +384,5 @@ let elapsed = 0.0;
 app.ticker.add((delta) => {
     elapsed += delta;
     boids.forEach(boid => boid.tick());
+    boids_exploded_effect.forEach(effect => effect.tick());
 });
